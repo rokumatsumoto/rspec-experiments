@@ -97,15 +97,20 @@ module ExpenseTracker
 
           let(:date) { '2017-06-12' }
 
-          it 'retuns an empty array as JSON' do
+          before do
             allow(ledger).to receive(:expenses_on)
             .with(date)
             .and_return([])
+          end
 
+          it 'retuns an empty array as JSON' do
             get "/expenses/#{date}"
             expect(last_response.body).to eq(JSON.generate([]))
           end
-          it 'responds with a 200 (OK)'
+          it 'responds with a 200 (OK)' do
+            get "/expenses/#{date}"
+            expect(last_response.status).to eq(200)
+          end
         end
       end
     end
