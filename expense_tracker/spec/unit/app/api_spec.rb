@@ -1,4 +1,5 @@
 require_relative '../../../app/api'
+require_relative '../../support/matchers/have_json_expect'
 require 'rack/test'
 require 'byebug'
 
