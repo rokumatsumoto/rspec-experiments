@@ -1,9 +1,7 @@
 require_relative '../../../app/ledger'
-require_relative '../../../config/sequel'
-require_relative '../../support/db'
 
 module ExpenseTracker
-  RSpec.describe Ledger, :aggregate_failures do
+  RSpec.describe Ledger, :aggregate_failures, :db do
     let(:ledger) { Ledger.new }
     let(:expense) do
       {
@@ -27,19 +25,35 @@ module ExpenseTracker
          end
        end
 
-       context 'when the expense lacks a payee' do
+     context 'when the expense lacks a payee' do
          it 'rejects the expend as invalid' do
-            expense.delete('payee')
+          expense.delete('payee')
 
-            result = ledger.record(expense)
+          result = ledger.record(expense)
 
-            expect(result).not_to be_success
-            expect(result.expense_id).to eq(nil)
-            expect(result.error_message).to include('`payee` is required')
+          expect(result).not_to be_success
+          expect(result.expense_id).to eq(nil)
+          expect(result.error_message).to include('`payee` is required')
 
-            except(DB[:expenses].count).to eq(0)
-         end
-       end
-     end
+          expect(DB[:expenses].count).to eq(0)
+        end
+      end
+    end
+
+    describe '#expenses_on' do
+     it 'returns all expenses for the provided date' do
+      result_1 = ledger.record(expense.merge('date' => '2017-06-10'))
+      result_2 = ledger.record(expense.merge('date' => '2017-06-10'))
+      result_3 = ledger.record(expense.merge('date' => '2017-06-11'))
+
+      expect(ledger.expenses_on('2017-06-10')).to contain_exactly(
+        a_hash_including(id:result_1.expense_id),
+        a_hash_including(id:result_2.expense_id))
+    end
+
+    it 'returns a blank array when there are no matching expense' do
+     expect(ledger.expenses_on('2017-06-10')).to eq([])
    end
  end
+end
+end

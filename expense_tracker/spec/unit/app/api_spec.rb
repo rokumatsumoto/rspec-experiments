@@ -1,5 +1,4 @@
 require_relative '../../../app/api'
-require_relative '../../support/matchers/have_json_expect'
 require 'rack/test'
 require 'byebug'
 
@@ -31,8 +30,6 @@ module ExpenseTracker
           post '/expenses', JSON.generate(expense)
 
           expect(last_response.body).to have_json_expect(include('expense_id' => 417))
-          # parsed = JSON.parse(last_response.body)
-          # expect(parsed).to include('expense_id' => 417)
         end
 
         it 'responds with a 200 (OK)' do
@@ -53,9 +50,6 @@ module ExpenseTracker
 
         it 'returns an error message' do
           post '/expenses', JSON.generate(expense)
-
-          # parsed = JSON.parse(last_response.body)
-          # expect(parsed).to include('error' => 'Expense incomplete')
 
           expect(last_response.body).to have_json_expect(include('error' => 'Expense incomplete'))
 
