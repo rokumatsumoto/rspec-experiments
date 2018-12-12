@@ -1,6 +1,5 @@
 require_relative '../../../app/api'
 require 'rack/test'
-require 'byebug'
 
 module ExpenseTracker
 
@@ -66,23 +65,19 @@ module ExpenseTracker
     describe 'GET /expenses/:date' do
       context 'when expenses exist on the given date' do
 
-        let(:date) { '2017-06-10' }
-        let(:find_results) { [FindResult.new('Starbucks', 5.75, '2017-06-10'),
-          FindResult.new('Zoo', 15.25, '2017-06-10')] }
-
           before do
             allow(ledger).to receive(:expenses_on)
-            .with(date)
-            .and_return(find_results)
+            .with('2017-06-10')
+            .and_return(['expense_1', 'expense_2'])
           end
 
           it 'returns the expense records as JSON' do
-            get "/expenses/#{date}"
-            expect(last_response.body).to eq(JSON.generate(find_results))
+            get "/expenses/2017-06-10"
+            expect(last_response.body).to eq(JSON.generate(['expense_1', 'expense_2']))
 
           end
           it 'responds with a 200 (OK)' do
-            get "/expenses/#{date}"
+            get "/expenses/2017-06-10"
             expect(last_response.status).to eq(200)
 
           end
@@ -90,20 +85,18 @@ module ExpenseTracker
 
         context 'when there are no expenses on the given date' do
 
-          let(:date) { '2017-06-12' }
-
           before do
             allow(ledger).to receive(:expenses_on)
-            .with(date)
+            .with('2017-06-10')
             .and_return([])
           end
 
           it 'retuns an empty array as JSON' do
-            get "/expenses/#{date}"
+            get "/expenses/2017-06-10"
             expect(last_response.body).to eq(JSON.generate([]))
           end
           it 'responds with a 200 (OK)' do
-            get "/expenses/#{date}"
+            get "/expenses/2017-06-10"
             expect(last_response.status).to eq(200)
           end
         end
