@@ -2,6 +2,7 @@ require 'sinatra/base'
 require 'json'
 require_relative 'ledger'
 require 'byebug'
+require 'ox'
 
 module ExpenseTracker
 
@@ -12,7 +13,7 @@ module ExpenseTracker
       super()
     end
 
-    post '/expenses' do
+    post '/expenses', :provides => 'application/json' do
       expense = JSON.parse(request.body.read)
       result = @ledger.record(expense)
 
@@ -22,6 +23,10 @@ module ExpenseTracker
         status 422
         JSON.generate('error' => result.error_message)
       end
+    end
+
+    post '/expenses', :provides => 'text/xml' do
+      # pending
     end
 
     get '/expenses/:date' do

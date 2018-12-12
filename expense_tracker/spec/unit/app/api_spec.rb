@@ -37,6 +37,7 @@ module ExpenseTracker
         end
 
       end
+
       context 'when the expense fails validation' do
 
         let(:expense) { { 'some' => 'data' } }
@@ -51,7 +52,6 @@ module ExpenseTracker
           post '/expenses', JSON.generate(expense)
 
           expect(last_response.body).to have_json_expect(include('error' => 'Expense incomplete'))
-
         end
 
         it 'responds with a 422 (Unprocessable entity)' do
@@ -65,41 +65,42 @@ module ExpenseTracker
     describe 'GET /expenses/:date' do
       context 'when expenses exist on the given date' do
 
-          before do
-            allow(ledger).to receive(:expenses_on)
-            .with('2017-06-10')
-            .and_return(['expense_1', 'expense_2'])
-          end
-
-          it 'returns the expense records as JSON' do
-            get "/expenses/2017-06-10"
-            expect(last_response.body).to eq(JSON.generate(['expense_1', 'expense_2']))
-
-          end
-          it 'responds with a 200 (OK)' do
-            get "/expenses/2017-06-10"
-            expect(last_response.status).to eq(200)
-
-          end
+        before do
+          allow(ledger).to receive(:expenses_on)
+          .with('2017-06-10')
+          .and_return(['expense_1', 'expense_2'])
         end
 
-        context 'when there are no expenses on the given date' do
+        it 'returns the expense records as JSON' do
+          get "/expenses/2017-06-10"
 
-          before do
-            allow(ledger).to receive(:expenses_on)
-            .with('2017-06-10')
-            .and_return([])
-          end
+          expect(last_response.body).to eq(JSON.generate(['expense_1', 'expense_2']))
+        end
+        it 'responds with a 200 (OK)' do
+          get "/expenses/2017-06-10"
 
-          it 'retuns an empty array as JSON' do
-            get "/expenses/2017-06-10"
-            expect(last_response.body).to eq(JSON.generate([]))
-          end
-          it 'responds with a 200 (OK)' do
-            get "/expenses/2017-06-10"
-            expect(last_response.status).to eq(200)
-          end
+          expect(last_response.status).to eq(200)
+        end
+      end
+
+      context 'when there are no expenses on the given date' do
+
+        before do
+          allow(ledger).to receive(:expenses_on)
+          .with('2017-06-10')
+          .and_return([])
+        end
+
+        it 'retuns an empty array as JSON' do
+          get "/expenses/2017-06-10"
+          expect(last_response.body).to eq(JSON.generate([]))
+        end
+
+        it 'responds with a 200 (OK)' do
+          get "/expenses/2017-06-10"
+          expect(last_response.status).to eq(200)
         end
       end
     end
   end
+end
