@@ -35,7 +35,6 @@ module ExpenseTracker
           post '/expenses', JSON.generate(expense)
           expect(last_response.status).to eq(200)
         end
-
       end
 
       context 'when the expense fails validation' do
@@ -60,6 +59,10 @@ module ExpenseTracker
           expect(last_response.status).to eq(422)
         end
       end
+    end
+
+    context 'when the expense content type is not supported' do
+      pending 'pending'
     end
 
     describe 'GET /expenses/:date' do

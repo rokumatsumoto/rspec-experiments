@@ -13,6 +13,10 @@ module ExpenseTracker
       super()
     end
 
+    def stringify_keys(hash)
+      hash.collect{|k,v| [k.to_s, v]}.to_h
+    end
+
     post '/expenses', :provides => 'application/json' do
       expense = JSON.parse(request.body.read)
       result = @ledger.record(expense)
@@ -26,10 +30,20 @@ module ExpenseTracker
     end
 
     post '/expenses', :provides => 'text/xml' do
-      # pending
+      expense = Ox.load(request.body.read, mode: :hash_no_attrs)
+      expense = expense.key?(:expense) ? stringify_keys(expense[:expense])
+                                       : stringify_keys(expense)
+      result = @ledger.record(expense)
+
+      if result.success?
+        Ox.dump('expense_id' => result.expense_id)
+      else
+        status 422
+        Ox.dump('error' => result.error_message)
+      end
     end
 
-    get '/expenses/:date' do
+    get '/expenses/:date', :provides => 'application/json' do
 
       result = @ledger.expenses_on(params['date'])
       if result.empty?
@@ -37,7 +51,16 @@ module ExpenseTracker
       else
         JSON.generate(result)
       end
+    end
 
+    get '/expenses/:date', :provides => 'text/xml' do
+      result = @ledger.expenses_on(params['date'])
+
+      if result.empty?
+        Ox.dump([])
+      else
+        Ox.dump(result)
+      end
     end
 
 
