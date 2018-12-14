@@ -13,10 +13,6 @@ module ExpenseTracker
       super()
     end
 
-    def stringify_keys(hash)
-      hash.collect{|k,v| [k.to_s, v]}.to_h
-    end
-
     post '/expenses', :provides => 'application/json' do
       expense = JSON.parse(request.body.read)
       result = @ledger.record(expense)
@@ -30,9 +26,10 @@ module ExpenseTracker
     end
 
     post '/expenses', :provides => 'text/xml' do
-      expense = Ox.load(request.body.read, mode: :hash_no_attrs)
-      expense = expense.key?(:expense) ? stringify_keys(expense[:expense])
-                                       : stringify_keys(expense)
+      expense = Ox.load(request.body.read, {mode: :hash_no_attrs, symbolize_keys: false})
+      expense = expense.key?('expense') ? expense['expense'] : expense
+      expense = expense.each {|k, v| expense[k] = v.to_f if k == 'amount'  }
+
       result = @ledger.record(expense)
 
       if result.success?
