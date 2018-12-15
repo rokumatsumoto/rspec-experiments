@@ -5,12 +5,27 @@ require 'byebug'
 require 'ox'
 
 module ExpenseTracker
-
   class API < Sinatra::Base
+    include Ox
 
     def initialize(ledger: Ledger.new)
       @ledger = ledger
       super()
+    end
+
+    helpers do
+      def create_xml(expense, root_name = 'expense')
+        Ox.default_options=({:with_xml => false})
+        doc = Document.new(:version => '1.0')
+        root = Element.new(root_name)
+        expense.each do |key, value|
+          e = Element.new(key)
+          e << value.to_s
+          root << e
+        end
+        doc << root
+        Ox.dump(doc)
+      end
     end
 
     post '/expenses', :provides => 'application/json' do
@@ -51,12 +66,14 @@ module ExpenseTracker
     end
 
     get '/expenses/:date', :provides => 'text/xml' do
-      result = @ledger.expenses_on(params['date'])
 
+      result = @ledger.expenses_on(params['date'])
       if result.empty?
         Ox.dump([])
       else
-        Ox.dump(result)
+        result = result.map do |e|
+           create_xml(e)
+        end
       end
     end
 
