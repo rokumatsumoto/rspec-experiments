@@ -26,12 +26,14 @@ module ExpenseTracker
         end
 
         it 'returns the expense id' do
+          header 'Accept', 'application/json'
           post '/expenses', JSON.generate(expense)
 
           expect(last_response.body).to have_json_expect(include('expense_id' => 417))
         end
 
         it 'responds with a 200 (OK)' do
+          header 'Accept', 'application/json'
           post '/expenses', JSON.generate(expense)
           expect(last_response.status).to eq(200)
         end
@@ -48,12 +50,14 @@ module ExpenseTracker
         end
 
         it 'returns an error message' do
+          header 'Accept', 'application/json'
           post '/expenses', JSON.generate(expense)
 
           expect(last_response.body).to have_json_expect(include('error' => 'Expense incomplete'))
         end
 
         it 'responds with a 422 (Unprocessable entity)' do
+          header 'Accept', 'application/json'
           post '/expenses', JSON.generate(expense)
 
           expect(last_response.status).to eq(422)
@@ -75,11 +79,13 @@ module ExpenseTracker
         end
 
         it 'returns the expense records as JSON' do
+          header 'Accept', 'application/json'
           get "/expenses/2017-06-10"
 
           expect(last_response.body).to eq(JSON.generate(['expense_1', 'expense_2']))
         end
         it 'responds with a 200 (OK)' do
+          header 'Accept', 'application/json'
           get "/expenses/2017-06-10"
 
           expect(last_response.status).to eq(200)
@@ -95,11 +101,13 @@ module ExpenseTracker
         end
 
         it 'retuns an empty array as JSON' do
+          header 'Accept', 'application/json'
           get "/expenses/2017-06-10"
           expect(last_response.body).to eq(JSON.generate([]))
         end
 
         it 'responds with a 200 (OK)' do
+          header 'Accept', 'application/json'
           get "/expenses/2017-06-10"
           expect(last_response.status).to eq(200)
         end

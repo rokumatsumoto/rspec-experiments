@@ -85,9 +85,9 @@ module ExpenseTracker
 
       get '/expenses/2017-06-10'
       expect(last_response.status).to eq(200)
-      expenses_h = Ox.load(last_response.body, {mode: :hash_no_attrs, symbolize_keys: false})
+      expenses = Ox.load(last_response.body, {mode: :hash_no_attrs, symbolize_keys: false})
 
-      expenses_h = expenses_h.each do |key, value|
+      expenses = expenses["expense_tracker"].each do |key, value|
        value.each do |ke, val|
          ke.each do |k, v|
            ke[k] = v.to_f if k == 'amount'
@@ -96,8 +96,7 @@ module ExpenseTracker
        end
      end
 
-     expect(expenses_h["expense"]).to contain_exactly(coffee, zoo)
+     expect(expenses["expense"]).to contain_exactly(coffee, zoo)
    end
-
  end
 end

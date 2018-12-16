@@ -14,17 +14,42 @@ module ExpenseTracker
     end
 
     helpers do
-      def create_xml(expense, root_name = 'expense')
+      def create_xml(expense_list, element_name = 'expense',
+       root_name = 'expense_tracker')
+
+        # We need array for root element
+        expense_list = [expense_list]  unless expense_list.is_a?(Array)
+
         Ox.default_options=({:with_xml => false})
         doc = Document.new(:version => '1.0')
         root = Element.new(root_name)
-        expense.each do |key, value|
-          e = Element.new(key)
-          e << value.to_s
-          root << e
+        expense_list.each do |e|
+          element = Element.new(element_name)
+          e.each do |key, value|
+            b = Element.new(key)
+            b << value.to_s
+            element << b
+          end
+          root << element
         end
         doc << root
         Ox.dump(doc)
+      end
+    end
+
+    post '/expenses', :provides => 'text/xml' do
+      expense = Ox.load(request.body.read, {mode: :hash_no_attrs, symbolize_keys: false})
+      expense = expense.key?('expense_tracker') ? expense.dig("expense_tracker", "expense")
+      : expense.dig("expense")
+      expense = expense.each {|k, v| expense[k] = v.to_f if k == 'amount'  }
+
+      result = @ledger.record(expense)
+
+      if result.success?
+        Ox.dump('expense_id' => result.expense_id)
+      else
+        status 422
+        Ox.dump('error' => result.error_message)
       end
     end
 
@@ -40,18 +65,13 @@ module ExpenseTracker
       end
     end
 
-    post '/expenses', :provides => 'text/xml' do
-      expense = Ox.load(request.body.read, {mode: :hash_no_attrs, symbolize_keys: false})
-      expense = expense.key?('expense') ? expense['expense'] : expense
-      expense = expense.each {|k, v| expense[k] = v.to_f if k == 'amount'  }
+    get '/expenses/:date', :provides => 'text/xml' do
 
-      result = @ledger.record(expense)
-
-      if result.success?
-        Ox.dump('expense_id' => result.expense_id)
+      result = @ledger.expenses_on(params['date'])
+      if result.empty?
+        Ox.dump([])
       else
-        status 422
-        Ox.dump('error' => result.error_message)
+        create_xml(result)
       end
     end
 
@@ -62,18 +82,6 @@ module ExpenseTracker
         JSON.generate([])
       else
         JSON.generate(result)
-      end
-    end
-
-    get '/expenses/:date', :provides => 'text/xml' do
-
-      result = @ledger.expenses_on(params['date'])
-      if result.empty?
-        Ox.dump([])
-      else
-        result = result.map do |e|
-           create_xml(e)
-        end
       end
     end
 
