@@ -13,6 +13,14 @@ module ExpenseTracker
       super()
     end
 
+    PATHS = %w[POST/expenses GET/expenses/].freeze
+
+    not_found do
+      halt 404 , 'Not Found' unless PATHS.any? { |path| (request.request_method + request.path_info).end_with?(path) }
+      halt 406, 'Not Acceptable' if request.preferred_type(%w[application/json text/xml]) == nil
+      halt 415, 'Unsupported media type' if PATHS.any? { |path| (request.request_method + request.path_info).end_with?(path) }
+    end
+
     helpers do
       def create_xml(expense_list, element_name = 'expense',
        root_name = 'expense_tracker')
@@ -35,9 +43,29 @@ module ExpenseTracker
         doc << root
         Ox.dump(doc)
       end
+
+      def header_content_type(accept)
+        halt 415, 'Unsupported media type' unless request.content_type == accept
+      end
+    end
+
+    post '/expenses', :provides => 'application/json' do
+
+      header_content_type 'application/json'
+      expense = JSON.parse(request.body.read)
+      result = @ledger.record(expense)
+
+      if result.success?
+        JSON.generate('expense_id' => result.expense_id)
+      else
+        status 422
+        JSON.generate('error' => result.error_message)
+      end
     end
 
     post '/expenses', :provides => 'text/xml' do
+
+      header_content_type 'text/xml'
       expense = Ox.load(request.body.read, {mode: :hash_no_attrs, symbolize_keys: false})
       expense = expense.key?('expense_tracker') ? expense.dig("expense_tracker", "expense")
       : expense.dig("expense")
@@ -53,15 +81,13 @@ module ExpenseTracker
       end
     end
 
-    post '/expenses', :provides => 'application/json' do
-      expense = JSON.parse(request.body.read)
-      result = @ledger.record(expense)
+    get '/expenses/:date', :provides => 'application/json' do
 
-      if result.success?
-        JSON.generate('expense_id' => result.expense_id)
+      result = @ledger.expenses_on(params['date'])
+      if result.empty?
+        JSON.generate([])
       else
-        status 422
-        JSON.generate('error' => result.error_message)
+        JSON.generate(result)
       end
     end
 
@@ -74,17 +100,5 @@ module ExpenseTracker
         create_xml(result)
       end
     end
-
-    get '/expenses/:date', :provides => 'application/json' do
-
-      result = @ledger.expenses_on(params['date'])
-      if result.empty?
-        JSON.generate([])
-      else
-        JSON.generate(result)
-      end
-    end
-
-
   end
 end

@@ -1,10 +1,12 @@
 require 'rack/test'
 require 'json'
 require_relative '../../app/api'
+require_relative '../../spec/support/api_helpers'
 
 module ExpenseTracker
   RSpec.describe 'Expense Tracker API', :db do
     include Rack::Test::Methods
+    include ApiHelpers
 
     def app
       ExpenseTracker::API.new
@@ -34,10 +36,9 @@ module ExpenseTracker
 
     end
 
-    # bundle exec rspec './spec/acceptance/expense_tracker_api_spec.rb[1:1]'
     it 'records submitted expenses using json' do
 
-      header 'Accept', 'application/json'
+      header_json
       coffee = post_expense(
         'payee' => 'Starbucks',
         'amount' => 5.75,
@@ -59,10 +60,9 @@ module ExpenseTracker
       expect(expenses).to contain_exactly(coffee, zoo)
     end
 
-    # bundle exec rspec './spec/acceptance/expense_tracker_api_spec.rb[1:2]'
     it 'records submitted expenses using xml' do
 
-      header 'Accept', 'text/xml'
+      header_xml
       coffee = {
         'payee' => 'Starbucks',
         'amount' => 5.75,
