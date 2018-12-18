@@ -68,6 +68,54 @@ module ExpenseTracker
         end
       end
 
+      context 'when the expense is successfully recorded using xml' do
+
+        let(:expense) { { 'some' => 'data' } }
+
+        before do
+          header_xml
+          allow(ledger).to receive(:record)
+          .with(expense)
+          .and_return(RecordResult.new(true, 417, nil))
+        end
+
+        it 'returns the expense id' do
+          post '/expenses', helpers.create_xml(expense)
+          parsed = Ox.parse_obj(last_response.body)
+          expect(parsed).to include('expense_id' => 417)
+        end
+
+        it 'responds with a 200 (OK)' do
+          post '/expenses', helpers.create_xml(expense)
+          expect(last_response.status).to eq(200)
+        end
+      end
+
+      context 'when the expense fails validation using xml' do
+
+        let(:expense) { { 'some' => 'data' } }
+
+        before do
+          header_xml
+          allow(ledger).to receive(:record)
+          .with(expense)
+          .and_return(RecordResult.new(false, 417, 'Expense incomplete'))
+        end
+
+        it 'returns an error message' do
+          post '/expenses', helpers.create_xml(expense)
+
+          parsed = Ox.parse_obj(last_response.body)
+          expect(parsed).to include('error' => 'Expense incomplete')
+        end
+
+        it 'responds with a 422 (Unprocessable entity)' do
+          post '/expenses', helpers.create_xml(expense)
+
+          expect(last_response.status).to eq(422)
+        end
+      end
+
       context 'when the expense content type is not supported' do
 
         before do
@@ -108,12 +156,79 @@ module ExpenseTracker
           expect(last_response.status).to eq(406)
         end
 
-        it 'returns an unsupported media type message' do
-          text = 'some = data'
+        it 'returns a not acceptable message' do
 
-          post '/expenses', text
+          post '/expenses', JSON.generate(expense)
 
           expect(last_response.body).to eq("Not Acceptable")
+        end
+      end
+
+      context 'when the incoming data doesn’t match the json format advertised' do
+
+        let(:expense) { 'data' }
+
+        before do
+          header_json
+        end
+
+        it 'responds with a 400 (Bad Request)' do
+          post '/expenses', JSON.generate(expense)
+
+          expect(last_response.status).to eq(400)
+        end
+
+        it 'returns a bad request message' do
+          post '/expenses', JSON.generate(expense)
+
+          expect(last_response.body).to eq("Bad Request")
+        end
+      end
+
+      context 'when the incoming data doesn’t match the xml format advertised' do
+
+        let(:expense) { '<expense><some>data</some></expense>' }
+        let(:expense2) { '<expense_tracker><some>data</some></expense_tracker>' }
+        let(:expense3) { 'data' }
+
+        before do
+          header_xml
+        end
+
+        it 'missing expense_tracker tag responds with a 400 (Bad Request)' do
+          post '/expenses', expense
+
+          expect(last_response.status).to eq(400)
+        end
+
+        it 'missing expense_tracker tag returns a bad request message' do
+          post '/expenses', expense
+
+          expect(last_response.body).to eq("Bad Request")
+        end
+
+        it 'missing expense tag responds with a 400 (Bad Request)' do
+          post '/expenses', expense2
+
+          expect(last_response.status).to eq(400)
+        end
+
+        it 'missing expense tag returns a bad request message' do
+          post '/expenses', expense2
+
+          expect(last_response.body).to eq("Bad Request")
+        end
+
+        it 'missing necessary tags responds with a 400 (Bad Request)' do
+          post '/expenses', expense3
+
+          expect(last_response.status).to eq(400)
+        end
+
+        it 'missing necessary tags returns a bad request message' do
+          post '/expenses', expense3
+
+          expect(last_response.body).to eq("Bad Request")
         end
       end
 
@@ -176,6 +291,47 @@ module ExpenseTracker
         it 'retuns an empty array in JSON' do
           get "/expenses/2017-06-10"
           expect(last_response.body).to eq(JSON.generate([]))
+        end
+
+        it 'responds with a 200 (OK)' do
+          get "/expenses/2017-06-10"
+          expect(last_response.status).to eq(200)
+        end
+      end
+
+      context 'when expenses exist on the given date return xml' do
+
+        before do
+          header_xml
+          allow(ledger).to receive(:expenses_on)
+          .with('2017-06-10')
+          .and_return([{'expense_1' => 'expense'}, {'expense_2' => 'expense'}])
+        end
+
+        it 'returns the expense records in XML' do
+          get "/expenses/2017-06-10"
+          expect(last_response.body).to eq(helpers.create_xml([{'expense_1' => 'expense'},
+           {'expense_2' => 'expense'}]))
+        end
+        it 'responds with a 200 (OK)' do
+          get "/expenses/2017-06-10"
+
+          expect(last_response.status).to eq(200)
+        end
+      end
+
+      context 'when there are no expenses on the given date return xml' do
+
+        before do
+          header_xml
+          allow(ledger).to receive(:expenses_on)
+          .with('2017-06-10')
+          .and_return([])
+        end
+
+        it 'retuns an empty array in XML' do
+          get "/expenses/2017-06-10"
+          expect(last_response.body).to eq(Ox.dump([]))
         end
 
         it 'responds with a 200 (OK)' do
