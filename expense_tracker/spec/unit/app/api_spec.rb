@@ -195,37 +195,37 @@ module ExpenseTracker
           header_xml
         end
 
-        it 'missing expense_tracker tag responds with a 400 (Bad Request)' do
+        example 'missing expense_tracker tag responds with a 400 (Bad Request)' do
           post '/expenses', expense
 
           expect(last_response.status).to eq(400)
         end
 
-        it 'missing expense_tracker tag returns a bad request message' do
+        example 'missing expense_tracker tag returns a bad request message' do
           post '/expenses', expense
 
           expect(last_response.body).to eq("Bad Request")
         end
 
-        it 'missing expense tag responds with a 400 (Bad Request)' do
+        example 'missing expense tag responds with a 400 (Bad Request)' do
           post '/expenses', expense2
 
           expect(last_response.status).to eq(400)
         end
 
-        it 'missing expense tag returns a bad request message' do
+        example 'missing expense tag returns a bad request message' do
           post '/expenses', expense2
 
           expect(last_response.body).to eq("Bad Request")
         end
 
-        it 'missing necessary tags responds with a 400 (Bad Request)' do
+        example 'missing necessary tags responds with a 400 (Bad Request)' do
           post '/expenses', expense3
 
           expect(last_response.status).to eq(400)
         end
 
-        it 'missing necessary tags returns a bad request message' do
+        example 'missing necessary tags returns a bad request message' do
           post '/expenses', expense3
 
           expect(last_response.body).to eq("Bad Request")
@@ -258,7 +258,7 @@ module ExpenseTracker
     end
 
     describe 'GET /expenses/:date' do
-      context 'when expenses exist on the given date return json' do
+      context 'when expenses exist on the given date in json format' do
 
         before do
           header_json
@@ -279,7 +279,7 @@ module ExpenseTracker
         end
       end
 
-      context 'when there are no expenses on the given date return json' do
+      context 'when there are no expenses on the given date in json format' do
 
         before do
           header_json
@@ -299,7 +299,7 @@ module ExpenseTracker
         end
       end
 
-      context 'when expenses exist on the given date return xml' do
+      context 'when expenses exist on the given date in xml format' do
 
         before do
           header_xml
@@ -320,7 +320,7 @@ module ExpenseTracker
         end
       end
 
-      context 'when there are no expenses on the given date return xml' do
+      context 'when there are no expenses on the given date in xml format' do
 
         before do
           header_xml
