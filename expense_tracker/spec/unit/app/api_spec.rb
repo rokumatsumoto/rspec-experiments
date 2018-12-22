@@ -1,20 +1,16 @@
 require_relative '../../../app/api'
 require 'rack/test'
-require_relative '../../../spec/support/api_helpers'
+# require_relative '../../../spec/support/api_helpers'
+require_relative '../../../spec/support/shared_context/api_shared_context'
 
 
 module ExpenseTracker
 
   RSpec.describe API do
-    include Rack::Test::Methods
-    include ApiHelpers
+    include_context 'API helpers'
 
     def app
       API.new(ledger: ledger)
-    end
-
-    def helpers
-      app.helpers
     end
 
     let(:ledger) { instance_double('ExpenseTracker::Ledger') }
