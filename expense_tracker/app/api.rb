@@ -10,7 +10,7 @@ module ExpenseTracker
 
     def initialize(ledger: Ledger.new)
       @ledger = ledger
-      super()
+       super()
     end
 
     PATHS = %w[POST/expenses GET/expenses/].freeze
@@ -80,7 +80,7 @@ module ExpenseTracker
       expense = Ox.load(expense, {mode: :hash_no_attrs, symbolize_keys: false})
       expense = expense.dig("expense_tracker", "expense") == nil ? (halt 400, 'Bad Request') :
        expense.dig("expense_tracker", "expense")
-     rescue Ox::ParseError => pe
+     rescue Ox::ParseError
       halt 400, 'Bad Request'
     end
 

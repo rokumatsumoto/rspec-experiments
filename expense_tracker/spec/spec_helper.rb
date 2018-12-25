@@ -1,6 +1,10 @@
 
 ENV['RACK_ENV'] = 'test'
 
+$VERBOSE = true
+require 'ruby_warning_filter'
+$stderr = RubyWarningFilter.new($stderr)
+
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[File.dirname(__FILE__) + "/support/matchers/**/*.rb"].each {|f| require f }
@@ -25,6 +29,9 @@ RSpec.configure do |config|
  config.when_first_matching_example_defined(:db) do
   require_relative 'support/db'
 end
+config.define_derived_metadata do |meta|
+  meta[:aggregate_failures] = true unless meta.key?(:aggregate_failures)
+end
 config.filter_gems_from_backtrace 'rack', 'rack-test', 'sequel', 'sinatra'
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
@@ -47,6 +54,7 @@ config.filter_gems_from_backtrace 'rack', 'rack-test', 'sequel', 'sinatra'
     # a real object. This is generally recommended, and will default to
     # `true` in RSpec 4.
     mocks.verify_partial_doubles = true
+    mocks.verify_doubled_constant_names = true
   end
 
   # This option will default to `:apply_to_host_groups` in RSpec 4 (and will
