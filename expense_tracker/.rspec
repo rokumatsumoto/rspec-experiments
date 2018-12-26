@@ -1,3 +1,9 @@
 --require spec_helper
---format Fuubar
---color
+
+# Formmatters
+# --format Fivemat
+
+#--format Fuubar
+#--color
+
+#--format NyanCatFormatter
