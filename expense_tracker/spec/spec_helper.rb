@@ -29,15 +29,19 @@ RSpec.configure do |config|
  config.when_first_matching_example_defined(:db) do
   require_relative 'support/db'
 end
+
 config.define_derived_metadata do |meta|
   meta[:aggregate_failures] = true unless meta.key?(:aggregate_failures)
 end
-config.fail_if_slower_than = 0.01
-config.define_derived_metadata(:file_path => %r{/spec/acceptance/}) do |meta|
-  meta[:fail_if_slower_than] = config.fail_if_slower_than
-end
-config.define_derived_metadata(:file_path => %r{/spec/integration/}) do |meta|
-  meta[:fail_if_slower_than] = config.fail_if_slower_than
+
+config.fail_if_slower_than = false #0.01
+if config.fail_if_slower_than
+  config.define_derived_metadata(:file_path => %r{/spec/acceptance/}) do |meta|
+    meta[:fail_if_slower_than] = config.fail_if_slower_than
+  end
+  config.define_derived_metadata(:file_path => %r{/spec/integration/}) do |meta|
+    meta[:fail_if_slower_than] = config.fail_if_slower_than
+  end
 end
 
 config.filter_gems_from_backtrace 'rack', 'rack-test', 'sequel', 'sinatra'

@@ -45,7 +45,7 @@ module ExpenseTracker
         'amount' => 15.25,
         'date' => '2017-06-10')
 
-      groceries = post_expense(
+      post_expense(
         'payee' => 'Whole Foods',
         'amount' => 95.20,
         'date' => '2017-06-11')
@@ -77,7 +77,7 @@ module ExpenseTracker
 
       coffee = post_expense_xml(coffee)
       zoo = post_expense_xml(zoo)
-      groceries = post_expense_xml(groceries)
+      post_expense_xml(groceries)
 
       get '/expenses/2017-06-10'
       expect(last_response.status).to eq(200)
