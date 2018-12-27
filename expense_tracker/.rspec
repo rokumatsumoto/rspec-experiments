@@ -1,3 +1,6 @@
+-I<%= ENV['HOME'] %>/ruby/rspec/fail-if-slower-than/lib
+--require 'fail_if_slower_than'
+
 --require spec_helper
 
 # Formmatters
