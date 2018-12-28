@@ -4,6 +4,7 @@ RSpec.configure do |c|
     Sequel::Migrator.run(DB, 'db/migrations')
     DB[:expenses].truncate
 
+    File.delete('log/sequel.log') if File.exist?('log/sequel.log')
     FileUtils.mkdir_p('log')
     require 'logger'
     DB.loggers << Logger.new('log/sequel.log')

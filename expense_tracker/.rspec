@@ -2,11 +2,3 @@
 --require 'fail_if_slower_than'
 
 --require spec_helper
-
-# Formmatters
-# --format Fivemat
-
-#--format Fuubar
-#--color
-
-#--format NyanCatFormatter

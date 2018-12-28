@@ -5,14 +5,17 @@ module ExpenseTracker
 
   class Ledger
     def record(expense)
-      if !expense.key?('payee') || !expense.key?('amount') || !expense.key?('date')
-        message = [
-          "Invalid expense:",
-          ("`payee` is required" unless expense.key?('payee')),
-          ("`amount` is required" unless expense.key?('amount')),
-          ("`date` is required" unless expense.key?('date')),
-          ].compact.join(" ")
-          return RecordResult.new(false, nil, message)
+
+        unless expense.key?('payee')
+          return invalid_response('payee')
+        end
+
+        unless expense.key?('amount')
+          return invalid_response('amount')
+        end
+
+        unless expense.key?('date')
+          return invalid_response('date')
         end
 
         DB[:expenses].insert(expense)
@@ -22,6 +25,13 @@ module ExpenseTracker
 
       def expenses_on(date)
         DB[:expenses].where(date: date).all
+      end
+
+      private
+
+      def invalid_response(str)
+        message = "Invalid expense: `#{str}` is required"
+        return RecordResult.new(false, nil, message)
       end
     end
   end
