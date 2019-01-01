@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 class Water
   def self.elements
-    [:oxygen, :hydrogen]
+    %i[oxygen hydrogen]
   end
 end
 
 RSpec.describe Water do
   it 'is H2O' do
-    expect(Water.elements).to contain_exactly(:hydrogen, :oxygen)
+    expect(described_class.elements).to contain_exactly(:hydrogen, :oxygen)
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_context 'API helpers' do
   include Rack::Test::Methods
 
@@ -5,11 +7,19 @@ RSpec.shared_context 'API helpers' do
   #   basic_authorize 'test_user', 'test_password'
   # end
 
-   def helpers
-     app.helpers
-   end
+  def xml_last_response
+    Ox.parse_obj(last_response.body)
+  end
 
-   def header_json
+  def json_last_response
+    JSON.parse(last_response.body)
+  end
+
+  def helpers
+    app.helpers
+  end
+
+  def header_json
     header 'Accept', 'application/json'
     header 'Content-Type', 'application/json'
   end

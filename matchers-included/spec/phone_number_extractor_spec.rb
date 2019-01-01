@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 class PhoneNumberExtractor
   def self.extract_from(text, &block)
     text.scan(/\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}$/, &block)
-
   end
 end
 
@@ -15,9 +16,10 @@ RSpec.describe PhoneNumberExtractor do
   end
 
   it 'yields phone numbers as it finds them' do
-    expect { |probe| PhoneNumberExtractor.extract_from(text, &probe)
-      }.to yield_successive_args(
-        '(202) 555-0168', '202-555-0199', '(202) 555-0176'
-        )
-    end
+    expect do |probe|
+      described_class.extract_from(text, &probe)
+    end.to yield_successive_args(
+      '(202) 555-0168', '202-555-0199', '(202) 555-0176'
+    )
   end
+end

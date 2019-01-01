@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rack/test'
 require 'json'
 require_relative '../../app/api'
@@ -13,42 +15,40 @@ module ExpenseTracker
     end
 
     def post_expense(expense)
-
       post '/expenses', JSON.generate(expense)
 
       expect(last_response.status).to eq(200)
-      parsed = JSON.parse(last_response.body)
-      expect(parsed).to include('expense_id' => a_kind_of(Integer))
-      expense.merge('id' => parsed['expense_id'])
+      expect(json_last_response).to include('expense_id' => a_kind_of(Integer))
+      expense.merge('id' => json_last_response['expense_id'])
     end
 
     def post_expense_xml(expense)
       post '/expenses', helpers.create_xml(expense)
 
       expect(last_response.status).to eq(200)
-      parsed = Ox.parse_obj(last_response.body)
-      expect(parsed).to include('expense_id' => a_kind_of(Integer))
-      expense.merge('id' => parsed['expense_id'])
-
+      expect(xml_last_response).to include('expense_id' => a_kind_of(Integer))
+      expense.merge('id' => xml_last_response['expense_id'])
     end
 
     it 'records submitted expenses using json' do
-
       header_json
       coffee = post_expense(
         'payee' => 'Starbucks',
         'amount' => 5.75,
-        'date' => '2017-06-10')
+        'date' => '2017-06-10'
+      )
 
       zoo = post_expense(
         'payee' => 'Zoo',
         'amount' => 15.25,
-        'date' => '2017-06-10')
+        'date' => '2017-06-10'
+      )
 
       post_expense(
         'payee' => 'Whole Foods',
         'amount' => 95.20,
-        'date' => '2017-06-11')
+        'date' => '2017-06-11'
+      )
 
       get '/expenses/2017-06-10'
       expect(last_response.status).to eq(200)
@@ -57,7 +57,6 @@ module ExpenseTracker
     end
 
     it 'records submitted expenses using xml' do
-
       header_xml
       coffee = {
         'payee' => 'Starbucks',
@@ -81,18 +80,18 @@ module ExpenseTracker
 
       get '/expenses/2017-06-10'
       expect(last_response.status).to eq(200)
-      expenses = Ox.load(last_response.body, {mode: :hash_no_attrs, symbolize_keys: false})
+      expenses = Ox.load(last_response.body, mode: :hash_no_attrs, symbolize_keys: false)
 
-      expenses = expenses["expense_tracker"].each do |key, value|
-       value.each do |ke, val|
-         ke.each do |k, v|
-           ke[k] = v.to_f if k == 'amount'
-           ke[k] = v.to_i if k == 'id'
-         end
-       end
-     end
+      expenses = expenses['expense_tracker'].each do |_key, value|
+        value.each do |ke, _val|
+          ke.each do |k, v|
+            ke[k] = v.to_f if k == 'amount'
+            ke[k] = v.to_i if k == 'id'
+          end
+        end
+      end
 
-     expect(expenses["expense"]).to contain_exactly(coffee, zoo)
-   end
- end
+      expect(expenses['expense']).to contain_exactly(coffee, zoo)
+    end
+  end
 end

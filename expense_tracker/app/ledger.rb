@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../config/sequel'
 
 module ExpenseTracker
@@ -5,34 +7,26 @@ module ExpenseTracker
 
   class Ledger
     def record(expense)
+      return invalid_response('payee') unless expense.key?('payee')
 
-        unless expense.key?('payee')
-          return invalid_response('payee')
-        end
+      return invalid_response('amount') unless expense.key?('amount')
 
-        unless expense.key?('amount')
-          return invalid_response('amount')
-        end
+      return invalid_response('date') unless expense.key?('date')
 
-        unless expense.key?('date')
-          return invalid_response('date')
-        end
+      DB[:expenses].insert(expense)
+      id = DB[:expenses].max(:id)
+      RecordResult.new(true, id, nil)
+    end
 
-        DB[:expenses].insert(expense)
-        id = DB[:expenses].max(:id)
-        RecordResult.new(true, id, nil)
-      end
+    def expenses_on(date)
+      DB[:expenses].where(date: date).all
+    end
 
-      def expenses_on(date)
-        DB[:expenses].where(date: date).all
-      end
+    private
 
-      private
-
-      def invalid_response(str)
-        message = "Invalid expense: `#{str}` is required"
-        return RecordResult.new(false, nil, message)
-      end
+    def invalid_response(str)
+      message = "Invalid expense: `#{str}` is required"
+      RecordResult.new(false, nil, message)
     end
   end
-
+end

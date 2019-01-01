@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'uri'
 RSpec::Matchers.define_negated_matcher :be_non_empty, :be_empty
 RSpec.describe 'Higher Order Matchers' do
@@ -19,5 +21,3 @@ RSpec.describe 'Higher Order Matchers' do
     expect([uri]).to include(an_object_having_attributes(host: 'github.com'))
   end
 end
-
-

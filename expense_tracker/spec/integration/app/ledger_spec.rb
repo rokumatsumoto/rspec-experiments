@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative '../../../app/ledger'
 
 module ExpenseTracker
   RSpec.describe Ledger, :aggregate_failures, :db do
-
     let(:ledger) { Ledger.new }
     let(:expense) do
       {
@@ -26,51 +27,54 @@ module ExpenseTracker
 
     describe '#record' do
       context 'with a valid expense' do
-        it 'successfully saves the expense in the DB' do
+        it 'successfully saves the expense in t
+        he DB' do
           result = ledger.record(expense)
 
           expect(result).to be_success
           expect(DB[:expenses].all).to match [
-           a_hash_including(id: result.expense_id,
-             payee: 'Starbucks',
-             amount: 5.75,
-             date: Date.iso8601('2017-06-10'))]
-         end
-       end
+            a_hash_including(id: result.expense_id,
+                             payee: 'Starbucks',
+                             amount: 5.75,
+                             date: Date.iso8601('2017-06-10'))
+          ]
+        end
+      end
 
-       context 'when the expense lacks a payee' do
-         it 'rejects the expend as invalid' do
-          invalid_expense("payee")
+      context 'when the expense lacks a payee' do
+        it 'rejects the expend as invalid' do
+          invalid_expense('payee')
         end
       end
 
       context 'when the expense lacks an amount' do
         it 'rejects the expend as invalid' do
-         invalid_expense("amount")
-       end
-     end
+          invalid_expense('amount')
+        end
+      end
 
-     context 'when the expense lacks a date' do
-      it 'rejects the expend as invalid' do
-        invalid_expense("date")
+      context 'when the expense lacks a date' do
+        it 'rejects the expend as invalid' do
+          invalid_expense('date')
+        end
+      end
+    end
+
+    describe '#expenses_on' do
+      it 'returns all expenses for the provided date' do
+        result1 = ledger.record(expense.merge('date' => '2017-06-10'))
+        result2 = ledger.record(expense.merge('date' => '2017-06-10'))
+        ledger.record(expense.merge('date' => '2017-06-11'))
+
+        expect(ledger.expenses_on('2017-06-10')).to contain_exactly(
+          an_expense_identified_by(result1.expense_id),
+          an_expense_identified_by(result2.expense_id)
+        )
+      end
+
+      it 'returns a blank array when there are no matching expense' do
+        expect(ledger.expenses_on('2017-06-10')).to eq([])
       end
     end
   end
-
-  describe '#expenses_on' do
-   it 'returns all expenses for the provided date' do
-    result_1 = ledger.record(expense.merge('date' => '2017-06-10'))
-    result_2 = ledger.record(expense.merge('date' => '2017-06-10'))
-    ledger.record(expense.merge('date' => '2017-06-11'))
-
-    expect(ledger.expenses_on('2017-06-10')).to contain_exactly(
-      a_hash_including(id:result_1.expense_id),
-      a_hash_including(id:result_2.expense_id))
-  end
-
-  it 'returns a blank array when there are no matching expense' do
-   expect(ledger.expenses_on('2017-06-10')).to eq([])
- end
-end
-end
 end

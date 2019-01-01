@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'byebug'
 
 MissingDataError = Class.new(StandardError)
 
 RSpec.describe 'Block Matchers' do
-
   example 'raise error block' do
     expect { 'hello'.world }.to raise_error(NoMethodError) do |ex|
       expect(ex.name).to eq(:world)
@@ -23,7 +24,6 @@ RSpec.describe 'Block Matchers' do
   end
 end
 
-
 class Host
   extend RSpec::Matchers
 
@@ -39,12 +39,11 @@ class Host
 
   expect { |block| 2.times(&block) }.to yield_control.twice
 
-  expect { |block|
-   just_yield_these(10, 'food', Math::PI, &block)
-   }.to yield_with_args(10, /foo/, a_value_within(0.1).of(3.14))
+  expect do |block|
+    just_yield_these(10, 'food', Math::PI, &block)
+  end.to yield_with_args(10, /foo/, a_value_within(0.1).of(3.14))
 
-   expect { |block| just_yield_these(&block) }.to yield_with_no_args
+  expect { |block| just_yield_these(&block) }.to yield_with_no_args
 
-   expect { system('echo OK') }.to output("OK\n").to_stdout_from_any_process
- end
-
+  expect { system('echo OK') }.to output("OK\n").to_stdout_from_any_process
+end

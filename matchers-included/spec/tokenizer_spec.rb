@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Tokenizer
   def self.tokenize(string)
     string.split
@@ -14,8 +16,7 @@ RSpec.describe Tokenizer do
   end
 
   it 'tokenizes multiple lines of text' do
-    tokenized = Tokenizer.tokenize(text)
+    tokenized = described_class.tokenize(text)
     expect(tokenized).to start_with('I', 'am', 'Sam.', 'Sam', 'I', 'am.')
-
   end
 end
