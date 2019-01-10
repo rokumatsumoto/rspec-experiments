@@ -19,7 +19,6 @@ RSpec.describe "Block implementations that provide responses" do
     allow(test_double).to receive(:message).and_yield(1)
 
     expect { |b| test_double.message(&b) }.to yield_with_args(1)
-
   end
 
   it "can throw a symbol" do
