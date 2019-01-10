@@ -36,7 +36,7 @@ RSpec.describe GuessingGame do
         OUT
       end
 
-      specify 'the player loses if they miss 3n guesses' do
+      specify 'the player loses if they miss 3 guesses' do
         output = play(12, [9, 45, 33])
 
         expect(output).to eq unindent(<<-OUT)
